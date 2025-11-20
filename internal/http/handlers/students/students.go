@@ -10,10 +10,11 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/mehedi0911/students-api/internal/models"
+	"github.com/mehedi0911/students-api/internal/storage"
 	"github.com/mehedi0911/students-api/internal/utils/response"
 )
 
-func New() http.HandlerFunc {
+func New(storage storage.Storage) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		slog.Info("Creating a new student..")
 		var student models.Student
@@ -35,6 +36,18 @@ func New() http.HandlerFunc {
 			return
 		}
 
-		response.WriteJson(w, http.StatusCreated, map[string]string{"success": "OK"})
+		lastInsertedId, err := storage.CreateStudent(
+			student,
+		)
+
+		if err != nil {
+			fmt.Printf("error from creating %s", err)
+			fmt.Println(response.WriteJson(w, http.StatusInternalServerError, err))
+			response.WriteJson(w, http.StatusInternalServerError, map[string]string{"error": fmt.Sprint(err)})
+			return
+		}
+		slog.Info("User created successfully", slog.String("UserId", fmt.Sprint(lastInsertedId)))
+
+		response.WriteJson(w, http.StatusCreated, map[string]int64{"id": lastInsertedId})
 	}
 }
