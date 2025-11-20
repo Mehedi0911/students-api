@@ -6,4 +6,5 @@ import (
 
 type Storage interface {
 	CreateStudent(payload models.Student) (int64, error)
+	GetStudentById(id int64) (models.Student, error)
 }
