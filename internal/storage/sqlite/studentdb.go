@@ -59,6 +59,7 @@ func (s *Sqlite) GetStudentById(id int64) (models.Student, error) {
 
 	return student, nil
 }
+
 func (s *Sqlite) GetStudentList() ([]models.Student, error) {
 	stmt, err := s.Db.Prepare("SELECT id, name, email, age FROM students")
 	if err != nil {
@@ -88,4 +89,11 @@ func (s *Sqlite) GetStudentList() ([]models.Student, error) {
 
 	return students, nil
 
+}
+
+func (s *Sqlite) UpdateStudent(payload models.Student) (int64, error) {
+	return 0, nil
+}
+func (s *Sqlite) DeleteStudent(id int64) (int64, error) {
+	return 0, nil
 }

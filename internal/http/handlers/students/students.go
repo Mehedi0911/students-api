@@ -43,7 +43,6 @@ func New(storage storage.Storage) http.HandlerFunc {
 
 		if err != nil {
 			fmt.Printf("error from creating %s", err)
-			fmt.Println(response.WriteJson(w, http.StatusInternalServerError, err))
 			response.WriteJson(w, http.StatusInternalServerError, map[string]string{"error": fmt.Sprint(err)})
 			return
 		}
@@ -72,6 +71,7 @@ func GetById(storage storage.Storage) http.HandlerFunc {
 		response.WriteJson(w, http.StatusOK, student)
 	}
 }
+
 func GetStudentList(storage storage.Storage) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
@@ -85,6 +85,34 @@ func GetStudentList(storage storage.Storage) http.HandlerFunc {
 		}
 
 		response.WriteJson(w, http.StatusOK, students)
+
+	}
+}
+
+func UpdateStudent(storage storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		slog.Info("Updating a student..")
+		var student models.Student
+		err := json.NewDecoder(r.Body).Decode(&student)
+
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				response.WriteJson(w, http.StatusBadRequest, response.GeneralError(fmt.Errorf("empty body")))
+				return
+			}
+			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(err))
+		}
+
+		if err := validator.New().Struct(student); err != nil {
+			validateErrs := err.(validator.ValidationErrors)
+			response.WriteJson(w, http.StatusBadRequest, response.ValidationError(validateErrs))
+			return
+		}
+
+	}
+}
+func DeleteStudent(storage storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 
 	}
 }
