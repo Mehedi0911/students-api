@@ -92,7 +92,39 @@ func (s *Sqlite) GetStudentList() ([]models.Student, error) {
 }
 
 func (s *Sqlite) UpdateStudent(payload models.Student) (int64, error) {
-	return 0, nil
+
+	var exists int64
+
+	err := s.Db.QueryRow(`SELECT COUNT(1) from students WHERE id = ?`, payload.Id).Scan(&exists)
+	if err != nil {
+		return 0, err
+	}
+
+	if exists == 0 {
+		return 0, fmt.Errorf("no students found with id %d", payload.Id)
+	}
+
+	stmt, err := s.Db.Prepare(`UPDATE students SET name = ?, email = ?, age = ? WHERE id = ?`)
+
+	if err != nil {
+		return 0, err
+	}
+
+	defer stmt.Close()
+
+	res, err := stmt.Exec(&payload.Name, &payload.Email, &payload.Age, &payload.Id)
+
+	if err != nil {
+		return 0, err
+	}
+
+	rowEffected, err := res.LastInsertId()
+
+	if err != nil {
+		return 0, err
+	}
+
+	return rowEffected, nil
 }
 func (s *Sqlite) DeleteStudent(id int64) (int64, error) {
 	return 0, nil

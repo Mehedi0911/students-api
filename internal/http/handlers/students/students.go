@@ -109,6 +109,16 @@ func UpdateStudent(storage storage.Storage) http.HandlerFunc {
 			return
 		}
 
+		rowEffected, err := storage.UpdateStudent(student)
+
+		if err != nil {
+			slog.Info("error from updating", slog.String("error updating", fmt.Sprint(err)))
+			response.WriteJson(w, http.StatusInternalServerError, map[string]string{"error": fmt.Sprint(err)})
+		}
+
+		slog.Info("student updated successfully", slog.String("UserId", fmt.Sprint(rowEffected)))
+		response.WriteJson(w, http.StatusOK, map[string]string{"id": fmt.Sprint(rowEffected)})
+
 	}
 }
 func DeleteStudent(storage storage.Storage) http.HandlerFunc {
