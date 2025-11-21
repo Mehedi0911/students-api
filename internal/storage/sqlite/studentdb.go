@@ -95,13 +95,13 @@ func (s *Sqlite) UpdateStudent(payload models.Student, id int64) (int64, error) 
 
 	var exists int64
 
-	err := s.Db.QueryRow(`SELECT COUNT(1) from students WHERE id = ?`, payload.Id).Scan(&exists)
+	err := s.Db.QueryRow(`SELECT COUNT(1) from students WHERE id = ?`, id).Scan(&exists)
 	if err != nil {
 		return 0, err
 	}
 
 	if exists == 0 {
-		return 0, fmt.Errorf("no students found with id %d", payload.Id)
+		return 0, fmt.Errorf("no students found with id %d", id)
 	}
 
 	stmt, err := s.Db.Prepare(`UPDATE students SET name = ?, email = ?, age = ? WHERE id = ?`)
