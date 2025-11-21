@@ -91,7 +91,7 @@ func (s *Sqlite) GetStudentList() ([]models.Student, error) {
 
 }
 
-func (s *Sqlite) UpdateStudent(payload models.Student) (int64, error) {
+func (s *Sqlite) UpdateStudent(payload models.Student, id int64) (int64, error) {
 
 	var exists int64
 
@@ -112,7 +112,7 @@ func (s *Sqlite) UpdateStudent(payload models.Student) (int64, error) {
 
 	defer stmt.Close()
 
-	res, err := stmt.Exec(&payload.Name, &payload.Email, &payload.Age, &payload.Id)
+	res, err := stmt.Exec(&payload.Name, &payload.Email, &payload.Age, id)
 
 	if err != nil {
 		return 0, err
@@ -127,5 +127,40 @@ func (s *Sqlite) UpdateStudent(payload models.Student) (int64, error) {
 	return rowEffected, nil
 }
 func (s *Sqlite) DeleteStudent(id int64) (int64, error) {
-	return 0, nil
+	var exists int
+	err := s.Db.QueryRow(`SELECT COUNT(1) from students WHERE id = ?`, id).Scan(&exists)
+	if err != nil {
+		return 0, err
+	}
+
+	if exists == 0 {
+		return 0, fmt.Errorf("no student found with id %d", id)
+	}
+
+	stmt, err := s.Db.Prepare(`DELETE FROM student WHERE id = ?`)
+
+	if err != nil {
+		return 0, err
+	}
+
+	defer stmt.Close()
+
+	res, err := stmt.Exec(id)
+
+	if err != nil {
+		return 0, err
+	}
+
+	rowEffected, err := res.LastInsertId()
+
+	if err != nil {
+		return 0, err
+	}
+
+	if rowEffected == 0 {
+		return 0, fmt.Errorf("failed to delete student with id %d", id)
+	}
+
+	return rowEffected, nil
+
 }
