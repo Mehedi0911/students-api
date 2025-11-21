@@ -118,10 +118,14 @@ func (s *Sqlite) UpdateStudent(payload models.Student, id int64) (int64, error) 
 		return 0, err
 	}
 
-	rowEffected, err := res.LastInsertId()
+	rowEffected, err := res.RowsAffected()
 
 	if err != nil {
 		return 0, err
+	}
+
+	if rowEffected == 0 {
+		return 0, fmt.Errorf("failed to update student with id %d", id)
 	}
 
 	return rowEffected, nil
@@ -137,7 +141,7 @@ func (s *Sqlite) DeleteStudent(id int64) (int64, error) {
 		return 0, fmt.Errorf("no student found with id %d", id)
 	}
 
-	stmt, err := s.Db.Prepare(`DELETE FROM student WHERE id = ?`)
+	stmt, err := s.Db.Prepare(`DELETE FROM students WHERE id = ?`)
 
 	if err != nil {
 		return 0, err
@@ -151,7 +155,7 @@ func (s *Sqlite) DeleteStudent(id int64) (int64, error) {
 		return 0, err
 	}
 
-	rowEffected, err := res.LastInsertId()
+	rowEffected, err := res.RowsAffected()
 
 	if err != nil {
 		return 0, err
